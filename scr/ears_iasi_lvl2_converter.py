@@ -52,6 +52,9 @@ for option, value in CONF.items("DEFAULT"):
 for option, value in CONF.items(MODE):
     OPTIONS[option] = value
 
+if 'services' not in OPTIONS:
+    OPTIONS['services'] = ''
+
 OUTPUT_PATH = OPTIONS['output_path']
 AREA_ID = OPTIONS['area_of_interest']
 
@@ -164,7 +167,7 @@ class FileListener(threading.Thread):
 
     def run(self):
 
-        with posttroll.subscriber.Subscribe('', [OPTIONS['posttroll_topic'], ],
+        with posttroll.subscriber.Subscribe(OPTIONS['services'], [OPTIONS['posttroll_topic'], ],
                                             True) as subscr:
 
             for msg in subscr.recv(timeout=90):
@@ -210,11 +213,16 @@ def create_message(resultfile, mda):
     to_send['format'] = 'IASI-L2'
     to_send['data_processing_level'] = '3'
     environment = MODE
-    pub_message = Message('/' + to_send['format'] + '/' +
-                          to_send['data_processing_level'] +
-                          environment +
-                          '/polar/regional/',
-                          "file", to_send).encode()
+    if 'publish_topic' in OPTIONS:
+        pub_message = Message(OPTIONS['publish_topic'],
+                              "file", to_send).encode()
+        
+    else:
+        pub_message = Message('/' + to_send['format'] + '/' +
+                              to_send['data_processing_level'] +
+                              environment +
+                              '/polar/regional/',
+                              "file", to_send).encode()
 
     return pub_message
 
@@ -250,6 +258,10 @@ def format_conversion(mda, scene, job_id, publish_q):
         result_file = local_path_prefix + '_vprof.nc'
         LOG.info("Rename netCDF file %s to %s", l2p.nc_filename, result_file)
         os.rename(l2p.nc_filename, result_file)
+
+        pubmsg_vprof = create_message(result_file, mda)
+        LOG.info("Sending: " + str(pubmsg_vprof))
+        publish_q.put(pubmsg_vprof)
 
         nctmpfilename = tempfile.mktemp()
         result_file = local_path_prefix + '_vcross.nc'

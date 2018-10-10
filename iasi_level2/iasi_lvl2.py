@@ -44,7 +44,7 @@ NODATA = -9.
 
 # Example filename:
 # IASI_PW3_02_M01_20160418132052Z_20160418132356Z_N_O_20160418140305Z.h5
-iasi_file_pattern = "IASI_PW3_02_{platform_name:s}_{start_time:%Y%m%d%H%M%S}Z_{end_time:%Y%m%d%H%M%S}Z_N_O_{creation_time:%Y%m%d%H%M%S}Z"
+iasi_file_pattern = "W_XX{gts_file_name:s}_{type:s}_{site:s}_{create_time:s}_IASI_PW3_02_{platform_name:s}_{start_time:%Y%m%d%H%M%S}Z_{end_time:%Y%m%d%H%M%S}Z"
 
 VAR_NAMES_AND_TYPES = {
     "temp": ('air_temperature_ml', 'f'),
@@ -154,6 +154,10 @@ class iasilvl2(object):
         self.longitudes = None
         if filename.endswith('.h5'):
             prefix = filename.strip('.h5')
+            self.h5_filename = filename
+            self.nc_filename = os.path.basename(filename).replace('.h5', '.nc')
+        elif filename.endswith('.hdf'):
+            prefix = filename.strip('.hdf')
             self.h5_filename = filename
             self.nc_filename = os.path.basename(filename).replace('.h5', '.nc')
         else:
