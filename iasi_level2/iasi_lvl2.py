@@ -492,8 +492,8 @@ class iasilvl2(object):
                 vcrossnamevar[idx, 0:len(lname)] = lname
                 idx = idx + 1
         else:
-            for start_name, end_name in zip(np.array(locnames)[0:2760:60],
-                                            np.array(locnames)[59:2760:60]):
+            for start_name, end_name in zip(np.array(locnames)[0:shape[3]:60],
+                                            np.array(locnames)[59:shape[3]:60]):
                 lname = start_name + ' ' + end_name
                 vcrossnamevar[idx, 0:len(lname)] = lname
                 idx = idx + 1
